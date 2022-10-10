@@ -1,5 +1,5 @@
 from crypt import methods
-from flask import Flask,render_template, request, redirect
+from flask import Flask,render_template, request, redirect, session, flash
 
 class Jogo:
     def __init__(self, nome, categoria, console):
@@ -13,6 +13,7 @@ jogo3 = Jogo('MonPatroll', 'Lunar', 'Mini-Game')
 listaJogos = [jogo1, jogo2, jogo3]
 
 app = Flask(__name__)
+app.secret_key = 'g4'
 
 @app.route('/')
 def index():
@@ -20,6 +21,8 @@ def index():
 
 @app.route('/cadastro')
 def cadastro():
+    if 'usuario_logado' not in session or session ['usuario_logado'] == None:
+        return redirect('/login?proxima=cadastro')
     return render_template('cadastrarJogo.html', titulo = 'Cadastro de jogos' )
 
 @app.route('/criar', methods = ['POST',])
@@ -33,13 +36,24 @@ def criar():
 
 @app.route('/login')
 def login():
-    return render_template('login.html')
+    proxima = request.args.get('proxima')
+    return render_template('login.html', proxima=proxima)
 
 @app.route('/autenticar', methods = ['POST',])
 def autenticar():
     if '123456' == request.form['senha']:
-        return redirect('/')
+        session ['usuario_logado'] = request.form['usuario']
+        flash(session ['usuario_logado'] + ' Logado com Sucesso!')
+        proxima_pagina = request.form['proxima']
+        return redirect('/{}'.format(proxima_pagina))
     else:
+        flash('Usuário Não Logado!')
         return redirect('/login')
+    
+@app.route('/logout')
+def logout():
+    session ['usuario_logado'] = None
+    flash('Logout Efetuado com Sucesso!')
+    return redirect('/')
 
 app.run(debug = True)
