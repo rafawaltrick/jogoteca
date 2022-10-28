@@ -1,8 +1,8 @@
 from sqlite3 import Timestamp
 from flask import render_template, request, redirect, session, flash, url_for, send_from_directory
 from jogoteca import app, db
-from  models import Usuarios, Jogos
-from helpers import FormularioJogo, recupera_imagem, deleta_arquivo, FormularioUsuario
+from  models import  Jogos
+from helpers import FormularioJogo, recupera_imagem, deleta_arquivo
 import time
 
 @app.route('/')
@@ -89,31 +89,6 @@ def apagar(id):
     return redirect(url_for('index'))
     
 
-@app.route('/login')
-def login():
-    proxima = request.args.get('proxima')
-    form = FormularioUsuario(request.form)
-    return render_template('login.html', proxima=proxima, form = form)
-
-@app.route('/autenticar', methods = ['POST',])
-def autenticar():
-    form = FormularioUsuario()
-    usuario = Usuarios.query.filter_by(nickname = form.nickname.data).first()
-    if usuario:
-        if form.senha.data == usuario.senha:
-            session ['usuario_logado'] = usuario.nickname
-            flash(usuario.nickname + ' Logado com Sucesso!')
-            proxima_pagina = request.form['proxima']
-            return redirect(proxima_pagina)
-    else:
-        flash('Usuário Não Logado!')
-        return redirect(url_for('login'))
-    
-@app.route('/logout')
-def logout():
-    session ['usuario_logado'] = None
-    flash('Logout Efetuado com Sucesso!')
-    return redirect(url_for('index'))
 
 @app.route('/uploads/<nome_arquivo>')
 def imagem(nome_arquivo):
